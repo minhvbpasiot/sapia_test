@@ -1,0 +1,51 @@
+version: "3.9"
+services:
+  dev:
+    container_name: nestjs_api_dev
+    image: nestjs-api-dev:${VERSION}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: npm run start:dev
+    ports:
+      - ${PORT}:${PORT}
+      - 3000:3000
+    depends_on:
+      - mongodb
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    env_file: .env
+    environment:
+      IS_DOCKER: 'true'
+    restart: unless-stopped
+  prod:
+    container_name: nestjs_api_prod
+    image: nestjs-api-prod:${VERSION}
+    build:
+      context: .
+      dockerfile: ./Dockerfile
+    command: npm run start:prod
+    ports:
+      - ${PORT}:${PORT}
+    depends_on:
+      - mongodb
+    env_file: .env
+    volumes:
+      - .:/usr/src/app
+      - /usr/src/app/node_modules
+    environment:
+      IS_DOCKER: 'true'
+    restart: always
+  mongodb:
+    image : mongo:latest
+    container_name: mongodb
+    volumes:
+      - ./database:/data/db
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USERNAME}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD}
+      MONGO_INITDB_DATABASE: ${MONGO_DATABASE}
+    ports:
+      - ${MONGO_FORWARD_PORT}:${MONGO_PORT}
+    restart: always
